@@ -1,25 +1,12 @@
 package com.storage.java.services;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-import com.mongodb.client.gridfs.model.GridFSFile;
-import com.storage.java.common.JsonParserHelper;
-import com.storage.java.models.DigitalBook;
 import com.storage.java.repositories.DigitalBookRepository;
-import org.bson.BsonObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.gridfs.GridFsResource;
-import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class DigitalBookService {
@@ -28,54 +15,22 @@ public class DigitalBookService {
     @Autowired
     DigitalBookRepository digitalBookRepository;
 
-    @Autowired
-    JsonParserHelper jsonParserHelper;
 
     @Autowired
-    GridFsTemplate gridFsTemplate;
+    StorageService storageService;
 
-
-    public String GetAllBooks(){
-        List<GridFSFile> fileList = new ArrayList<GridFSFile>();
-        gridFsTemplate.find(new Query()).into(fileList);
-
-        List<DigitalBook> digitalBooks = fileList.stream().map(x -> DigitalBook.builder()
-                .title(x.getMetadata().getString("title"))
-                .author(x.getMetadata().getString("author"))
-                .filename(x.getFilename())
-                .contentType(x.getMetadata().getString("_contentType"))
-                .id(((BsonObjectId) x.getId()).getValue().toString()).build()).collect(Collectors.toList());
-
-        return jsonParserHelper.WriteToStrJson(digitalBooks);
-    }
-
-    public GridFsResource GetFile(String id) {
-        GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(id)));
-
-        GridFsResource resource = new GridFsResource(gridFsFile);
-
-        return resource;
-        /*try {
-            InputStream stream = resource.getInputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-    }
 
     public String AddBook(MultipartFile file, String title, String author) {
-        return store(file,title,author);
+        return storageService.store(file,title,author);
     }
 
-    public String store(MultipartFile file, String title, String author){
-        InputStream stream = null;
-        try {
-            stream = file.getInputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        DBObject metaData = new BasicDBObject();
-        metaData.put("title", title);
-        metaData.put("author", author);
-        return gridFsTemplate.store(stream, file.getOriginalFilename(), file.getContentType(), metaData).toString();
+    public String GetAllBooks(){
+        return  storageService.GetAllBooks();
     }
+
+    public InputStream GetFile(String id) throws IOException {
+        return storageService.GetFile(id);
+    }
+
+
 }
