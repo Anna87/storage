@@ -7,9 +7,9 @@ import com.storage.java.common.JsonParserHelper;
 import com.storage.java.models.DigitalBook;
 import org.bson.BsonObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,18 +58,9 @@ public class StorageService {
     }
 
 
-    public InputStream GetFile(String id) throws IOException { /// ask
+    public Resource GetFile(String id) throws IOException {
         GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(id)));
-
-        GridFsResource resource = new GridFsResource(gridFsFile);
-        InputStream stream = resource.getInputStream();
-        return stream;
-        /*try {
-            InputStream stream = resource.getInputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-
+        return gridFsTemplate.getResource(gridFsFile.getFilename());
     }
 
 }

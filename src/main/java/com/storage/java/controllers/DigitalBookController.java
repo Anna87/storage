@@ -3,14 +3,13 @@ package com.storage.java.controllers;
 import com.storage.java.services.DigitalBookService;
 import com.storage.java.services.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.xml.ws.ResponseWrapper;
 import java.io.IOException;
-import java.io.InputStream;
 
 @RestController
 public class DigitalBookController {
@@ -38,14 +37,11 @@ public class DigitalBookController {
         return res;
     }*/
 
-    @PostMapping("/downloadDigitalBook")
-    public void GetFileByBookId(@RequestParam("fileId") String fileId) {
-        try {
-            InputStream res = digitalBookService.GetFile(fileId);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        //return res;
+
+    @PostMapping(path = "/downloadDigitalBook", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public Resource GetFileByBookId(@RequestParam("fileId") String fileId) throws IOException {
+        Resource resource = digitalBookService.GetFile(fileId);
+        return resource;
     }
 
 }
