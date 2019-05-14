@@ -40,7 +40,7 @@ public class DigitalBookController {
     }*/
 
 
-    @PostMapping(path = "/downloadDigitalBook", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @PostMapping(path = "/storage/downloadDigitalBook", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public Resource GetFileByBookId(@RequestParam("fileId") String fileId) throws IOException {
         Resource resource = digitalBookService.GetFile(fileId);
         return resource;
