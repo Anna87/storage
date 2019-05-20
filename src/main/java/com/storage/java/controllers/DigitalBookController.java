@@ -22,13 +22,13 @@ public class DigitalBookController {
     @Autowired
     StorageService storageService;
 
-    @GetMapping("/digitalBooks")
+    @GetMapping("/storage/digitalBooks")
     public String books() {
         return digitalBookService.GetAllBooks();
     }
 
 
-    @PostMapping(path = "/addDigitalBook")
+    @PostMapping(path = "/storage/addDigitalBook")
     public String newDigitalBook(@RequestParam("file") MultipartFile data, @RequestParam("title") String title, @RequestParam("author") String author) { // working
         return digitalBookService.AddBook(data, title, author);
     }
