@@ -13,16 +13,16 @@ public class DigitalBookService {
     StorageService storageService;
 
 
-    public String AddBook(MultipartFile file, String title, String author) {
+    public String addBook(MultipartFile file, String title, String author) {
         return storageService.store(file,title,author);
     }
 
-    public String GetAllBooks(){
-        return  storageService.GetAllBooks();
+    public String getAllBooks(){
+        return  storageService.getAllBooks();
     }
 
-    public Resource GetFile(String id) throws IOException {
-        return storageService.GetFile(id);
+    public Resource getFile(String id) throws IOException {
+        return storageService.getFile(id);
     }
 
 

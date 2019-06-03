@@ -24,25 +24,18 @@ public class DigitalBookController {
 
     @GetMapping("/storage/digitalBooks")
     public String books() {
-        return digitalBookService.GetAllBooks();
+        return digitalBookService.getAllBooks();
     }
 
 
     @PostMapping(path = "/storage/addDigitalBook")
-    public String newDigitalBook(@RequestParam("file") MultipartFile data, @RequestParam("title") String title, @RequestParam("author") String author) { // working
-        return digitalBookService.AddBook(data, title, author);
+    public String newDigitalBook(@RequestParam("file") MultipartFile data, @RequestParam("title") String title, @RequestParam("author") String author) {
+        return digitalBookService.addBook(data, title, author);
     }
-    /*
-    @GetMapping("/digitalBooks/{id}")
-    public GridFsResource GetBookById(@PathVariable String id){
-        GridFsResource res = digitalBookService.GetFile(id);
-        return res;
-    }*/
-
 
     @PostMapping(path = "/storage/downloadDigitalBook", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public Resource GetFileByBookId(@RequestParam("fileId") String fileId) throws IOException {
-        Resource resource = digitalBookService.GetFile(fileId);
+    public Resource getFileByBookId(@RequestParam("fileId") String fileId) throws IOException {
+        Resource resource = digitalBookService.getFile(fileId);
         return resource;
     }
 

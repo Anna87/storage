@@ -43,7 +43,7 @@ public class StorageService {
         return gridFsTemplate.store(stream, file.getOriginalFilename(), file.getContentType(), metaData).toString();
     }
 
-    public String GetAllBooks(){
+    public String getAllBooks(){
         List<GridFSFile> fileList = new ArrayList<GridFSFile>();
         gridFsTemplate.find(new Query()).into(fileList);
 
@@ -54,11 +54,11 @@ public class StorageService {
                 .contentType(x.getMetadata().getString("_contentType"))
                 .id(((BsonObjectId) x.getId()).getValue().toString()).build()).collect(Collectors.toList());
 
-        return jsonParserHelper.WriteToStrJson(digitalBooks);
+        return jsonParserHelper.writeToStrJson(digitalBooks);
     }
 
 
-    public Resource GetFile(String id) throws IOException {
+    public Resource getFile(String id) throws IOException {
         GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(id)));
         return gridFsTemplate.getResource(gridFsFile.getFilename());
     }
