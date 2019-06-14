@@ -3,10 +3,10 @@ package com.storage.java.services;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.client.gridfs.model.GridFSFile;
-import com.storage.java.common.JsonParserHelper;
 import com.storage.java.models.DigitalBook;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.BsonObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -21,45 +21,41 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class StorageService {
 
-    @Autowired
-    GridFsTemplate gridFsTemplate;
+    private final GridFsTemplate gridFsTemplate;
 
-    @Autowired
-    JsonParserHelper jsonParserHelper;
-
-
-    public String store(MultipartFile file, String title, String author){
-        InputStream stream = null;
+    public String add(final MultipartFile file, final String title, final String author){
         try {
-            stream = file.getInputStream();
+            final InputStream stream = file.getInputStream();
+            final DBObject metaData = new BasicDBObject();
+            metaData.put("title", title);
+            metaData.put("author", author);
+            return gridFsTemplate.store(stream, file.getOriginalFilename(), file.getContentType(), metaData).toString();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IllegalArgumentException(e.getMessage()); //TODO is that ok?
         }
-        DBObject metaData = new BasicDBObject();
-        metaData.put("title", title);
-        metaData.put("author", author);
-        return gridFsTemplate.store(stream, file.getOriginalFilename(), file.getContentType(), metaData).toString();
     }
 
-    public String getAllBooks(){
-        List<GridFSFile> fileList = new ArrayList<GridFSFile>();
+    public List<DigitalBook> getAllBooks(){
+        final List<GridFSFile> fileList = new ArrayList<GridFSFile>();
         gridFsTemplate.find(new Query()).into(fileList);
 
-        List<DigitalBook> digitalBooks = fileList.stream().map(x -> DigitalBook.builder()
+        final List<DigitalBook> digitalBooks = fileList.stream().map(x -> DigitalBook.builder()
                 .title(x.getMetadata().getString("title"))
                 .author(x.getMetadata().getString("author"))
                 .filename(x.getFilename())
                 .contentType(x.getMetadata().getString("_contentType"))
                 .id(((BsonObjectId) x.getId()).getValue().toString()).build()).collect(Collectors.toList());
 
-        return jsonParserHelper.writeToStrJson(digitalBooks);
+        return digitalBooks;
     }
 
 
-    public Resource getFile(String id) throws IOException {
-        GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(id)));
+    public Resource getFile(final String id) throws IOException {
+        final GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(id)));
         return gridFsTemplate.getResource(gridFsFile.getFilename());
     }
 

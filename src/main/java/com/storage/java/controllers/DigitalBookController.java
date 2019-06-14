@@ -1,49 +1,45 @@
 package com.storage.java.controllers;
 
-import com.storage.java.services.DigitalBookService;
+import com.storage.java.converters.DigitalBookDetailsConverter;
+import com.storage.java.dto.responses.DigitalBookDetails;
 import com.storage.java.services.StorageService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.sun.istack.internal.NotNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.constraints.NotBlank;
 import java.io.IOException;
+import java.util.List;
 
-@Slf4j
+@RequiredArgsConstructor
 @RestController
+@RequestMapping("/storage")
 public class DigitalBookController {
 
-    @Autowired
-    DigitalBookService digitalBookService;
+    private final StorageService storageService;
 
-    @Autowired
-    StorageService storageService;
+    private final DigitalBookDetailsConverter digitalBookDetailsConverter;
 
-    @GetMapping("/storage/digitalBooks")
-    public String books() {
-        return digitalBookService.getAllBooks();
+    @GetMapping
+    public List<DigitalBookDetails> books() {
+        return digitalBookDetailsConverter.convertList(storageService.getAllBooks());
     }
 
-
-    @PostMapping(path = "/storage/addDigitalBook")
-    public String newDigitalBook(@RequestParam("file") MultipartFile data, @RequestParam("title") String title, @RequestParam("author") String author) {
-        return digitalBookService.addBook(data, title, author);
+    //@Secured(value = {"ROLE_ADMIN"}) // TODO status 403
+    @PostMapping(path = "/add")
+    public String newDigitalBook(
+            @NotNull @RequestParam("file") MultipartFile data,
+            @NotBlank @RequestParam("title") String title,
+            @NotBlank @RequestParam("author") String author) {
+        return storageService.add(data, title, author);
     }
 
-    @PostMapping("/storage/digitalBooksTest")
-    public void GetBookById(@RequestParam("file") MultipartFile data){
-        log.debug("debug");
-    }
-
-    @PostMapping(path = "/storage/downloadDigitalBook", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public Resource getFileByBookId(@RequestParam("fileId") String fileId) throws IOException {
-        Resource resource = digitalBookService.getFile(fileId);
-        return resource;
+    @GetMapping(path = "/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public Resource getFileByBookId(@NotBlank @RequestParam("fileId") String fileId) throws IOException {
+        return storageService.getFile(fileId);
     }
 
 }
