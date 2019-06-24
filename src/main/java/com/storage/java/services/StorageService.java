@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class StorageService {
+    private final String title = "title";
+    private final String author = "author";
 
     private final GridFsTemplate gridFsTemplate;
 
@@ -31,8 +33,8 @@ public class StorageService {
         try {
             final InputStream stream = file.getInputStream();
             final DBObject metaData = new BasicDBObject();
-            metaData.put("title", title);
-            metaData.put("author", author);
+            metaData.put(title, title);
+            metaData.put(author, author);
             return gridFsTemplate.store(stream, file.getOriginalFilename(), file.getContentType(), metaData).toString();
         } catch (IOException e) {
             throw new IllegalArgumentException(e.getMessage()); //TODO is that ok?
@@ -44,8 +46,8 @@ public class StorageService {
         gridFsTemplate.find(new Query()).into(fileList);
 
         final List<DigitalBook> digitalBooks = fileList.stream().map(x -> DigitalBook.builder()
-                .title(x.getMetadata().getString("title"))
-                .author(x.getMetadata().getString("author"))
+                .title(x.getMetadata().getString(title))
+                .author(x.getMetadata().getString(author))
                 .filename(x.getFilename())
                 .contentType(x.getMetadata().getString("_contentType"))
                 .id(((BsonObjectId) x.getId()).getValue().toString()).build()).collect(Collectors.toList());
